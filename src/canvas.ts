@@ -1,28 +1,33 @@
-export class Canvas {
-  canvas: CanvasRenderingContext2D;
-  canvasEle: HTMLCanvasElement;
+const canvasEle = document.getElementById('app') as HTMLCanvasElement;
 
-  constructor() {
-    const canvasEle = document.getElementById('app') as HTMLCanvasElement;
+canvasEle.width = canvasEle.clientWidth;
+canvasEle.height = canvasEle.clientHeight;
 
-    canvasEle.width = canvasEle.clientWidth;
-    canvasEle.height = canvasEle.clientHeight;
+const canvasWidth = canvasEle.width;
+const canvasHeight = canvasEle.height;
 
-    this.canvas = canvasEle.getContext('2d')!;
-    this.canvasEle = canvasEle;
+const canvas = canvasEle.getContext('2d')!;
+
+// 绘制一个像素点
+export function putPixel(x: number, y: number, color: string) {
+  const halfH = canvasEle.height / 2;
+  const halfW = canvasEle.width / 2;
+
+  if (x > halfW / 2 || y > halfH || x < -halfW || y < -halfH) {
+    return;
   }
 
-  putPixel(x: number, y: number, color: string) {
-    const halfW = this.canvasEle.width / 2;
-    const halfH = this.canvasEle.height / 2;
+  const trueX = halfW + x;
+  const trueY = halfH - y;
 
-    if (x > this.canvasEle.width / 2 || y > this.canvasEle.height / 2) {
-      return;
-    }
-
-    this.canvas.fillStyle = color;
-    this.canvas.fillRect(x, y, 1, 1);
-  }
+  canvas.fillStyle = color;
+  canvas.fillRect(trueX, trueY, 1, 1);
 }
 
-const c = new Canvas();
+const viewWidth = 100;
+const viewHeight = 100;
+
+// canvas坐标转viewport坐标
+function canvas2viewport(x: number, y: number) {
+  return [(x * viewWidth) / canvasWidth, (y * viewHeight) / canvasHeight, 100];
+}
