@@ -2,6 +2,32 @@ type RGBColor = [number, number, number];
 type RGBObject = { r: number; g: number; b: number };
 type Color = string | RGBObject;
 
+/**
+ * 将两个颜色叠加
+ * @param {Color} color1 - 底层颜色
+ * @param {Color} color2 - 上层颜色
+ * @returns {string} 叠加后的颜色，以十六进制格式返回
+ */
+export function blendColors(color1: Color, color2: Color): string {
+  // 解析两个颜色
+  const rgb1 = parseColor(color1);
+  const rgb2 = parseColor(color2);
+
+  // 使用简单的叠加算法：(a + b) - (a * b / 255)
+  const blendedRGB: RGBColor = [
+    Math.round(rgb1[0] + rgb2[0] - (rgb1[0] * rgb2[0]) / 255),
+    Math.round(rgb1[1] + rgb2[1] - (rgb1[1] * rgb2[1]) / 255),
+    Math.round(rgb1[2] + rgb2[2] - (rgb1[2] * rgb2[2]) / 255)
+  ];
+
+  // 确保结果在0-255范围内
+  const clampedRGB = blendedRGB.map(value => Math.min(255, Math.max(0, value))) as RGBColor;
+
+  // 返回十六进制格式的颜色
+  return rgbToHex(clampedRGB);
+}
+
+
 export function multiplyColor(color: Color, factor: number): string {
   // 解析颜色
   let rgb: RGBColor = parseColor(color);

@@ -69,3 +69,13 @@ export function multiplyVectorByScalar(vector: Point, scalar: number): Point {
 export function subtractVectors(v1: Vector, v2: Vector): Vector {
   return [v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]];
 }
+
+/**
+ * 对向量取反
+ *
+ * @param {Vector} vector - 需要取反的向量
+ * @returns {Vector} 取反后的新向量
+ */
+export function negateVector(vector: Vector): Vector {
+  return [-vector[0], -vector[1], -vector[2]];
+}

@@ -4,12 +4,22 @@ export class Sphere {
   center: Point;
   radius: number;
   color: string;
+  /* 光泽度 */
   specular: number;
+  /* 反射率 */
+  reflective: number;
 
-  constructor(center: Point, radius: number, color: string, specular: number) {
-    this.center = center;
-    this.radius = radius;
-    this.color = color;
-    this.specular = specular;
+  constructor(options: {
+    center: Point;
+    radius: number;
+    color: string;
+    specular: number;
+    reflective: number;
+  }) {
+    this.center = options.center;
+    this.radius = options.radius;
+    this.color = options.color;
+    this.specular = options.specular;
+    this.reflective = options.reflective;
   }
 }
