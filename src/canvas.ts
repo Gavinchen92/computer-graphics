@@ -4,11 +4,12 @@ import { Scene } from './components/scene';
 import { Sphere } from './components/sphere';
 import { Point, Vector } from './interface';
 import {
-  dotProduct,
-  multiplyPointByScalar,
+  calculateDotProduct,
+  multiplyVectorByScalar,
   normalizeVector,
-  vectorFromPoints,
-  vectorNorm,
+  subtractVectors,
+  calculateVectorFromPoints,
+  calculateVectorMagnitude,
 } from './utits';
 
 const canvasEle = document.getElementById('c') as HTMLCanvasElement;
@@ -89,11 +90,12 @@ function traceRay(
     return BackgroundColor;
   }
 
-  const P = vectorFromPoints(multiplyPointByScalar(D, closestT), O);
-  let N = vectorFromPoints(P, closestSphere.center);
+  const P = calculateVectorFromPoints(multiplyVectorByScalar(D, closestT), O);
+  let N = calculateVectorFromPoints(P, closestSphere.center);
   N = normalizeVector(N);
 
-  const i = computeLighting(scene, P, N);
+  const V: Vector = [-D[0], -D[1], -D[2]];
+  const i = computeLighting(scene, P, N, V, closestSphere.specular);
 
   return multiplyColor(closestSphere.color, i);
 }
@@ -107,11 +109,11 @@ function traceRay(
  */
 function intersectRaySphere(O: Point, D: Point, sphere: Sphere) {
   const { center, radius } = sphere;
-  const co = vectorFromPoints(O, center);
+  const co = calculateVectorFromPoints(O, center);
 
-  const a = dotProduct(D, D);
-  const b = 2 * dotProduct(co, D);
-  const c = dotProduct(co, co) - radius * radius;
+  const a = calculateDotProduct(D, D);
+  const b = 2 * calculateDotProduct(co, D);
+  const c = calculateDotProduct(co, co) - radius * radius;
 
   const discriminant = b * b - 4 * a * c;
 
@@ -130,9 +132,17 @@ function intersectRaySphere(O: Point, D: Point, sphere: Sphere) {
  * @param {Scene} scene - 场景对象
  * @param {Point} P - 表面上的点
  * @param {Vector} N - 表面法向量
+ * @param {Vector} V - 视线
+ * @param {number} specular - 光照强度
  * @returns {number} 光照强度
  */
-function computeLighting(scene: Scene, P: Point, N: Vector) {
+function computeLighting(
+  scene: Scene,
+  P: Point,
+  N: Vector,
+  V: Vector,
+  specular: number,
+) {
   let i = 0;
 
   for (const light of scene.lights) {
@@ -141,15 +151,32 @@ function computeLighting(scene: Scene, P: Point, N: Vector) {
     } else {
       let L: Vector;
       if (light.type === 'point') {
-        L = vectorFromPoints((light as PointLight).position, P);
+        L = calculateVectorFromPoints((light as PointLight).position, P);
       } else {
         L = (light as DirectionalLight).direction;
       }
 
-      const nDotL = dotProduct(N, L);
-
+      // 漫反射
+      const nDotL = calculateDotProduct(N, L);
       if (nDotL > 0) {
-        i += (light.intensity * nDotL) / (vectorNorm(N) * vectorNorm(L));
+        i +=
+          (light.intensity * nDotL) /
+          (calculateVectorMagnitude(N) * calculateVectorMagnitude(L));
+      }
+
+      // 镜面反射
+      if (specular !== -2) {
+        const R = subtractVectors(multiplyVectorByScalar(N, 2 * nDotL), L);
+        const nDotR = calculateDotProduct(V, R);
+        if (nDotR > 0) {
+          i +=
+            light.intensity *
+            Math.pow(
+              nDotR /
+                (calculateVectorMagnitude(V) * calculateVectorMagnitude(R)),
+              specular,
+            );
+        }
       }
     }
   }
