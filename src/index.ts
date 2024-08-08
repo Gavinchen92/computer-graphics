@@ -59,4 +59,6 @@ scene.addLight(new PointLight(0.6, [2, 1, 0]));
 // 平行光
 scene.addLight(new DirectionalLight(0.2, [1, 4, 4]));
 
+scene.camera.rotation = Math.PI / 4;
+
 render(scene);

@@ -79,3 +79,32 @@ export function subtractVectors(v1: Vector, v2: Vector): Vector {
 export function negateVector(vector: Vector): Vector {
   return [-vector[0], -vector[1], -vector[2]];
 }
+
+/**
+ * 对向量应用旋转变换
+ *
+ * @param {Vector} vector - 需要旋转的向量
+ * @param {number} rotation - 旋转角度（以弧度为单位）
+ * @param {string} axis - 旋转轴，可选值为 'x', 'y', 或 'z'
+ * @returns {Vector} 旋转后的新向量
+ *
+ * 这个函数将给定的向量围绕指定轴旋转指定的角度。
+ * 旋转使用3D旋转矩阵进行计算。
+ * 正角度表示逆时针旋转，负角度表示顺时针旋转。
+ */
+export function applyRotation(vector: Vector, rotation: number, axis: 'x' | 'y' | 'z'): Vector { 
+  const [x, y, z] = vector;
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+
+  switch (axis) {
+    case 'x':
+      return [x, y * cos - z * sin, y * sin + z * cos];
+    case 'y':
+      return [z * sin + x * cos, y, z * cos - x * sin];
+    case 'z':
+      return [x * cos - y * sin, x * sin + y * cos, z];
+    default:
+      throw new Error('Invalid rotation axis. Must be "x", "y", or "z".');
+  }
+}

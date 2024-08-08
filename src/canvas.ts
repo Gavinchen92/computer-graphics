@@ -11,6 +11,7 @@ import {
   calculateVectorFromPoints,
   calculateVectorMagnitude,
   negateVector,
+  applyRotation,
 } from './utits';
 
 const canvasEle = document.getElementById('c') as HTMLCanvasElement;
@@ -22,8 +23,6 @@ const canvasWidth = canvasEle.width;
 const canvasHeight = canvasEle.height;
 
 const canvas = canvasEle.getContext('2d')!;
-
-const OriginalPoint: Point = [0, 0, 0];
 
 const BackgroundColor = '#000000';
 
@@ -199,7 +198,7 @@ function closestIntersection(
 }
 
 /**
- * 计算场景中的光照强度
+ * 计算场景中光照强度
  * @param {Scene} scene - 场景对象
  * @param {Point} P - 表面上的点
  * @param {Vector} N - 表面法向量
@@ -271,11 +270,12 @@ function computeLighting(
 export function render(scene: Scene) {
   for (let x = -canvasWidth / 2; x <= canvasWidth / 2; x++) {
     for (let y = -canvasHeight / 2; y <= canvasHeight / 2; y++) {
-      const D = canvas2viewport(x, y);
-
-      const color = traceRay(scene, OriginalPoint, D, 1, Infinity, 2);
+      const viewportPoint = canvas2viewport(x, y);
+      const D = applyRotation(viewportPoint, scene.camera.rotation, 'y');
+      const color = traceRay(scene, scene.camera.position, D, 1, Infinity, 2);
 
       putPixel(x, y, color);
     }
   }
 }
+
