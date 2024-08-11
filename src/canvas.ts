@@ -1,3 +1,4 @@
+import chroma from 'chroma-js';
 import { blendColors, multiplyColor } from './color';
 import { DirectionalLight, PointLight } from './components/light';
 import { Scene } from './components/scene';
@@ -19,12 +20,15 @@ const canvasEle = document.getElementById('c') as HTMLCanvasElement;
 canvasEle.width = canvasEle.clientWidth;
 canvasEle.height = canvasEle.clientHeight;
 
-const canvasWidth = canvasEle.width;
-const canvasHeight = canvasEle.height;
+const CANVAS_WIDTH = canvasEle.width;
+const CANVAS_HEIGHT = canvasEle.height;
 
 const canvas = canvasEle.getContext('2d')!;
 
-const BackgroundColor = '#000000';
+const CANVAS_HALF_WIDTH = CANVAS_WIDTH / 2;
+const CANVAS_HALF_HEIGHT = CANVAS_HEIGHT / 2;
+
+const BackgroundColor = [0, 0, 0] as chroma.ColorSpaces['rgb'];
 
 const plantD = 1;
 const viewportWidth = 1;
@@ -33,26 +37,28 @@ const viewportHeight = 1;
 const EPSILON = 1e-6; // 声明一个极小正数
 
 // 在画布上绘制一个像素点
-function putPixel(x: number, y: number, color: string) {
-  const halfH = canvasEle.height / 2;
-  const halfW = canvasEle.width / 2;
-
-  if (x > halfW || y > halfH || x < -halfW || y < -halfH) {
+function putPixel(x: number, y: number, color: chroma.ColorSpaces['rgb']) {
+  if (
+    x > CANVAS_HALF_WIDTH ||
+    y > CANVAS_HALF_HEIGHT ||
+    x < -CANVAS_HALF_WIDTH ||
+    y < -CANVAS_HALF_HEIGHT
+  ) {
     return;
   }
 
-  const trueX = halfW + x;
-  const trueY = halfH - y;
+  const trueX = CANVAS_HALF_WIDTH + x;
+  const trueY = CANVAS_HALF_HEIGHT - y;
 
-  canvas.fillStyle = color;
+  canvas.fillStyle = 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')';
   canvas.fillRect(trueX, trueY, 1, 1);
 }
 
 // canvas坐标转viewport坐标
 function canvas2viewport(x: number, y: number): Point {
   return [
-    (x * viewportWidth) / canvasWidth,
-    (y * viewportHeight) / canvasHeight,
+    (x * viewportWidth) / CANVAS_WIDTH,
+    (y * viewportHeight) / CANVAS_HEIGHT,
     plantD,
   ];
 }
@@ -77,7 +83,7 @@ function reflectRay(R: Vector, N: Vector) {
  * @param {number} tMin - 最小距离（用于避免自相交）
  * @param {number} tMax - 最大距离（用于限制光线追踪的范围）
  * @param {number} recursionDepth - 递归深度（用于限制递归的次数）
- * @returns {string} 光线与场景中物体相交后的颜色
+ * @returns {chroma.ColorSpaces['rgb']} 光线与场景中物体相交后的颜色
  */
 function traceRay(
   scene: Scene,
@@ -86,7 +92,7 @@ function traceRay(
   tMin: number,
   tMax: number,
   recursionDepth: number = 0,
-): string {
+): chroma.ColorSpaces['rgb'] {
   const [closestSphere, closestT] = closestIntersection(
     scene,
     O,
@@ -104,13 +110,9 @@ function traceRay(
   let N = calculateVectorFromPoints(P, closestSphere.center);
   N = normalizeVector(N);
 
-  const i = computeLighting(
-    scene,
-    P,
-    N,
-    negateVector(D),
-    closestSphere.specular,
-  );
+  const negatedD = negateVector(D);
+
+  const i = computeLighting(scene, P, N, negatedD, closestSphere.specular);
 
   const localColor = multiplyColor(closestSphere.color, i);
 
@@ -119,7 +121,7 @@ function traceRay(
     return localColor;
   }
 
-  const R = reflectRay(negateVector(D), N);
+  const R = reflectRay(negatedD, N);
   const reflectedColor = traceRay(
     scene,
     P,
@@ -198,7 +200,7 @@ function closestIntersection(
 }
 
 /**
- * 计算场景中光照强度
+ * 计算场景中光照��度
  * @param {Scene} scene - 场景对象
  * @param {Point} P - 表面上的点
  * @param {Vector} N - 表面法向量
@@ -214,6 +216,8 @@ function computeLighting(
   specular: number,
 ) {
   let i = 0;
+
+  const NMagnitude = calculateVectorMagnitude(N);
 
   for (const light of scene.lights) {
     if (light.type === 'ambient') {
@@ -244,7 +248,7 @@ function computeLighting(
       if (nDotL > 0) {
         i +=
           (light.intensity * nDotL) /
-          (calculateVectorMagnitude(N) * calculateVectorMagnitude(L));
+          (NMagnitude * calculateVectorMagnitude(L));
       }
 
       // 镜面反射
@@ -268,14 +272,13 @@ function computeLighting(
 }
 
 export function render(scene: Scene) {
-  for (let x = -canvasWidth / 2; x <= canvasWidth / 2; x++) {
-    for (let y = -canvasHeight / 2; y <= canvasHeight / 2; y++) {
+  for (let x = -CANVAS_HALF_WIDTH; x <= CANVAS_HALF_WIDTH; x++) {
+    for (let y = -CANVAS_HALF_HEIGHT; y <= CANVAS_HALF_HEIGHT; y++) {
       const viewportPoint = canvas2viewport(x, y);
-      const D = applyRotation(viewportPoint, scene.camera.rotation, 'y');
+      const D = applyRotation(viewportPoint, scene.camera.rotation.radian, 'y');
       const color = traceRay(scene, scene.camera.position, D, 1, Infinity, 2);
 
       putPixel(x, y, color);
     }
   }
 }
-

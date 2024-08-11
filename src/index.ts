@@ -11,7 +11,7 @@ scene.addSphere(
   new Sphere({
     center: [0, -1, 3],
     radius: 1,
-    color: 'red',
+    color: [255, 0, 0],
     specular: 500,
     reflective: 0.2,
   }),
@@ -22,7 +22,7 @@ scene.addSphere(
   new Sphere({
     center: [2, 0, 4],
     radius: 1,
-    color: 'blue',
+    color: [0, 0, 255],
     specular: 500,
     reflective: 0.3,
   }),
@@ -33,7 +33,7 @@ scene.addSphere(
   new Sphere({
     center: [-2, 0, 4],
     radius: 1,
-    color: 'green',
+    color: [0, 255, 0],
     specular: 10,
     reflective: 0.4,
   }),
@@ -44,13 +44,13 @@ scene.addSphere(
   new Sphere({
     center: [0, -5001, 0],
     radius: 5000,
-    color: 'yellow',
+    color: [255, 255, 0],
     specular: 1000,
     reflective: 0.5,
   }),
 );
 
-// 环境光 
+// 环境光
 scene.addLight(new AmbientLight(0.4));
 
 // 点光源
@@ -59,6 +59,21 @@ scene.addLight(new PointLight(0.6, [2, 1, 0]));
 // 平行光
 scene.addLight(new DirectionalLight(0.2, [1, 4, 4]));
 
-scene.camera.rotation = Math.PI / 4;
+scene.camera.rotation = {
+  direction: 'y',
+  radian: 0,
+};
 
-render(scene);
+function animate() {
+  const start = performance.now();
+
+  scene.camera.rotation.radian += Math.PI / 180;
+  render(scene);
+
+  const end = performance.now();
+  console.log(`Frame time: ${end - start} ms`);
+
+  requestAnimationFrame(animate);
+}
+
+animate();

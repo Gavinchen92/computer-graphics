@@ -17,5 +17,9 @@
     "prettier": "^3.3.3",
     "typescript": "^5.5.2",
     "typescript-eslint": "^8.0.0"
+  },
+  "dependencies": {
+    "@types/chroma-js": "^2.4.4",
+    "chroma-js": "^2.6.0"
   }
 }

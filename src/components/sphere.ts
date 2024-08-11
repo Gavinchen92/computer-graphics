@@ -1,9 +1,10 @@
 import { Point } from '../interface';
+import chroma from 'chroma-js';
 
 export class Sphere {
   center: Point;
   radius: number;
-  color: string;
+  color: chroma.ColorSpaces['rgb'];
   /* 光泽度 */
   specular: number;
   /* 反射率 */
@@ -12,7 +13,7 @@ export class Sphere {
   constructor(options: {
     center: Point;
     radius: number;
-    color: string;
+    color: chroma.ColorSpaces['rgb'];
     specular: number;
     reflective: number;
   }) {
