@@ -3,6 +3,7 @@ import { render } from './canvas';
 import { Scene } from './components/scene';
 import { Sphere } from './components/sphere';
 import { AmbientLight, DirectionalLight, PointLight } from './components/light';
+import Stats from 'stats.js';
 
 const scene = new Scene();
 
@@ -64,14 +65,18 @@ scene.camera.rotation = {
   radian: 0,
 };
 
+// 创建Stats实例
+const stats = new Stats();
+stats.showPanel(1); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild(stats.dom);
+
 function animate() {
-  const start = performance.now();
+  stats.begin();
 
   scene.camera.rotation.radian += Math.PI / 180;
   render(scene);
 
-  const end = performance.now();
-  console.log(`Frame time: ${end - start} ms`);
+  stats.end();
 
   requestAnimationFrame(animate);
 }
