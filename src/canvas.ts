@@ -1,4 +1,4 @@
-import chroma from 'chroma-js';
+import { RGB } from './interface';
 import { blendColors, multiplyColor } from './color';
 import { DirectionalLight, PointLight } from './components/light';
 import { Scene } from './components/scene';
@@ -28,7 +28,7 @@ const canvas = canvasEle.getContext('2d')!;
 const CANVAS_HALF_WIDTH = CANVAS_WIDTH / 2;
 const CANVAS_HALF_HEIGHT = CANVAS_HEIGHT / 2;
 
-const BackgroundColor = [0, 0, 0] as chroma.ColorSpaces['rgb'];
+const BackgroundColor: RGB = [0, 0, 0];
 
 const plantD = 1;
 const viewportWidth = 1;
@@ -37,7 +37,7 @@ const viewportHeight = 1;
 const EPSILON = 1e-6; // 声明一个极小正数
 
 // 在画布上绘制一个像素点
-function putPixel(x: number, y: number, color: chroma.ColorSpaces['rgb']) {
+function putPixel(x: number, y: number, color: RGB) {
   if (
     x > CANVAS_HALF_WIDTH ||
     y > CANVAS_HALF_HEIGHT ||
@@ -83,7 +83,7 @@ function reflectRay(R: Vector, N: Vector) {
  * @param {number} tMin - 最小距离（用于避免自相交）
  * @param {number} tMax - 最大距离（用于限制光线追踪的范围）
  * @param {number} recursionDepth - 递归深度（用于限制递归的次数）
- * @returns {chroma.ColorSpaces['rgb']} 光线与场景中物体相交后的颜色
+ * @returns {RGB} ��线与场景中物体相交后的颜色
  */
 function traceRay(
   scene: Scene,
@@ -92,7 +92,7 @@ function traceRay(
   tMin: number,
   tMax: number,
   recursionDepth: number = 0,
-): chroma.ColorSpaces['rgb'] {
+): RGB {
   const [closestSphere, closestT] = closestIntersection(
     scene,
     O,
@@ -142,7 +142,7 @@ function traceRay(
  * @param {Point} O - 光线起点
  * @param {Point} D - 光线方向
  * @param {Sphere} sphere - 球体对象
- * @returns {[number, number]} [t1, t2] 表示光线与球体的两个交点对应的参数值
+ * @returns {[number, number]} [t1, t2] 表示光线与球体的两个交点���应的参数值
  */
 function intersectRaySphere(O: Point, D: Point, sphere: Sphere) {
   const { center, radius } = sphere;
@@ -200,7 +200,7 @@ function closestIntersection(
 }
 
 /**
- * 计算场景中光照��度
+ * 计算场景中光照度
  * @param {Scene} scene - 场景对象
  * @param {Point} P - 表面上的点
  * @param {Vector} N - 表面法向量
