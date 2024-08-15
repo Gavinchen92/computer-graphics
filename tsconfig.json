@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
     "useDefineForClassFields": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": ["@webgpu/types"]
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts"]
 }
