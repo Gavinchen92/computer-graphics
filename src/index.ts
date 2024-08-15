@@ -4,7 +4,7 @@ import { Scene } from './components/scene';
 import { Sphere } from './components/sphere';
 import { AmbientLight, DirectionalLight, PointLight } from './components/light';
 import Stats from 'stats.js';
-import shaderCode from './webgpu/index.wgsl';
+import { init } from './webgpu';
 
 const scene = new Scene();
 
@@ -84,38 +84,5 @@ function animate() {
 
 // animate();
 
-async function init() {
-  const adapter = await navigator.gpu.requestAdapter();
-  if (!adapter) {
-    console.error('WebGPU adapter not found');
-    return;
-  }
-  const device = await adapter.requestDevice();
-
-  const shaderModule = device.createShaderModule({
-    code: shaderCode,
-  });
-
-  const canvas = document.getElementById('c') as HTMLCanvasElement;
-  const context = canvas.getContext('webgpu')!;
-
-  context.configure({
-    device,
-    format: navigator.gpu.getPreferredCanvasFormat(),
-    alphaMode: 'premultiplied',
-  });
-
-  const vertices = new Float32Array([
-    0.0, 0.6, 0, 1, 1, 0, 0, 1, -0.5, -0.6, 0, 1, 0, 1, 0, 1, 0.5, -0.6, 0, 1,
-    0, 0, 1, 1,
-  ]);
-
-  const vertexBuffer = device.createBuffer({
-    size: vertices.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-  });
-
-  device.queue.writeBuffer(vertexBuffer, 0, vertices, 0, vertices.length);
-}
 
 init();
