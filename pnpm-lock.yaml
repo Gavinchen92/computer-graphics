@@ -20,6 +20,12 @@ importers:
       stats.js:
         specifier: ^0.17.0
         version: 0.17.0
+      webworker-promise:
+        specifier: ^0.5.1
+        version: 0.5.1
+      worker-loader:
+        specifier: ^3.0.8
+        version: 3.0.8(webpack@5.93.0)
     devDependencies:
       '@eslint/js':
         specifier: ^9.8.0
@@ -918,6 +924,9 @@ packages:
       webpack-cli:
         optional: true
 
+  webworker-promise@0.5.1:
+    resolution: {integrity: sha512-KiHNwAWKVM5fyqssxD9TZb977qE9xsXYxYKxDogRefYdwDuDlGIJCGMd8nA1/bXoqa66E8JOIwgl8YEHOV0pIw==}
+
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
@@ -926,6 +935,12 @@ packages:
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
+
+  worker-loader@3.0.8:
+    resolution: {integrity: sha512-XQyQkIFeRVC7f7uRhFdNMe/iJOdO6zxAaR3EWbDp45v3mDhrTi+++oswKNxShUNjPC/1xUp5DB29YKLhFo129g==}
+    engines: {node: '>= 10.13.0'}
+    peerDependencies:
+      webpack: ^4.0.0 || ^5.0.0
 
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
@@ -1819,10 +1834,25 @@ snapshots:
       - esbuild
       - uglify-js
 
+  webworker-promise@0.5.1:
+    dependencies:
+      webpack: 5.93.0
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+      - webpack-cli
+
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
 
   word-wrap@1.2.5: {}
+
+  worker-loader@3.0.8(webpack@5.93.0):
+    dependencies:
+      loader-utils: 2.0.4
+      schema-utils: 3.3.0
+      webpack: 5.93.0
 
   yocto-queue@0.1.0: {}

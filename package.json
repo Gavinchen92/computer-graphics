@@ -23,6 +23,8 @@
     "@types/chroma-js": "^2.4.4",
     "@types/stats.js": "^0.17.3",
     "raw-loader": "^4.0.2",
-    "stats.js": "^0.17.0"
+    "stats.js": "^0.17.0",
+    "webworker-promise": "^0.5.1",
+    "worker-loader": "^3.0.8"
   }
 }

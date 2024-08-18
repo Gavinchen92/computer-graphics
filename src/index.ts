@@ -4,7 +4,6 @@ import { Scene } from './components/scene';
 import { Sphere } from './components/sphere';
 import { AmbientLight, DirectionalLight, PointLight } from './components/light';
 import Stats from 'stats.js';
-import { init } from './webgpu';
 
 const scene = new Scene();
 
@@ -82,7 +81,4 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-// animate();
-
-
-init();
+animate();
