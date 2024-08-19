@@ -66,8 +66,9 @@ const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom);
 
+scene.camera.rotationX = -Math.PI / 12;
+
 function animate() {
-  scene.camera.rotationX += Math.PI / 720;
   scene.camera.rotationY += Math.PI / 720;
 
   stats.begin();

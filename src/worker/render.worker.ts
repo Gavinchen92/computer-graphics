@@ -177,6 +177,36 @@ function closestIntersection(
 }
 
 /**
+ * 判断光线是否与场景中最近的交点
+ * @param {Scene} scene - 场景对象
+ * @param {Point} O - 光线起点
+ * @param {Point} D - 光线方向
+ * @param {number} tMin - 最小距离（用于避免自相交）
+ * @param {number} tMax - 最大距离（用于限制光线追踪的范围）
+ * @returns {boolean} 返回最近的球体对象和对应的交点参数值
+ */
+function hasIntersection(
+  scene: Scene,
+  O: Point,
+  D: Point,
+  tMin: number,
+  tMax: number,
+) {
+  for (const sphere of scene.spheres) {
+    const [t1, t2] = intersectRaySphere(O, D, sphere);
+    if (t1 > tMin && t1 < tMax) {
+      return true;
+    }
+
+    if (t2 > tMin && t2 < tMax) {
+      return true;
+    }
+  }
+
+  return false
+}
+
+/**
  * 计算场景中光照度
  * @param {Scene} scene - 场景对象
  * @param {Point} P - 表面上的点
@@ -207,16 +237,7 @@ function computeLighting(
         L = (light as DirectionalLight).direction;
       }
 
-      // 阴影检测
-      const [closestSphere] = closestIntersection(
-        scene,
-        P,
-        L,
-        EPSILON,
-        Infinity,
-      );
-
-      if (closestSphere) {
+      if (hasIntersection(scene, P, L, EPSILON, Infinity)) {
         continue;
       }
 

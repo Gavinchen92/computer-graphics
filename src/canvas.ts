@@ -16,21 +16,12 @@ const CANVAS_HALF_WIDTH = CANVAS_WIDTH / 2;
 const CANVAS_HALF_HEIGHT = CANVAS_HEIGHT / 2;
 
 // 在画布上绘制一个像素点
-function putPixel(x: number, y: number, color: RGB) {
-  if (
-    x > CANVAS_HALF_WIDTH ||
-    y > CANVAS_HALF_HEIGHT ||
-    x < -CANVAS_HALF_WIDTH ||
-    y < -CANVAS_HALF_HEIGHT
-  ) {
-    return;
-  }
+function drawPixels(pixelColors: Uint8ClampedArray) {
+  const imageData = new ImageData(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  const trueX = CANVAS_HALF_WIDTH + x;
-  const trueY = CANVAS_HALF_HEIGHT - y;
+  imageData.data.set(pixelColors);
 
-  canvas.fillStyle = 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')';
-  canvas.fillRect(trueX, trueY, 1, 1);
+  canvas.putImageData(imageData, 0, 0);
 }
 
 const worker = new Worker(
@@ -38,34 +29,31 @@ const worker = new Worker(
 );
 const renderWorker = new WebworkerPromise(worker);
 
+const chunkHeight = Math.ceil(CANVAS_HEIGHT / 4);
 const chunks = [
-  // 左上
   {
     startX: -CANVAS_HALF_WIDTH,
-    startY: 0,
-    endX: 0,
-    endY: CANVAS_HALF_HEIGHT,
-  },
-  // 左下
-  {
-    startX: -CANVAS_HALF_WIDTH,
-    startY: -CANVAS_HALF_HEIGHT,
-    endX: 0,
-    endY: -1,
-  },
-  // 右上
-  {
-    startX: 1,
-    startY: 0,
+    startY: CANVAS_HALF_HEIGHT - chunkHeight,
     endX: CANVAS_HALF_WIDTH,
     endY: CANVAS_HALF_HEIGHT,
   },
-  // 右下
   {
-    startX: 1,
+    startX: -CANVAS_HALF_WIDTH,
+    startY: CANVAS_HALF_HEIGHT - 2 * chunkHeight,
+    endX: CANVAS_HALF_WIDTH,
+    endY: CANVAS_HALF_HEIGHT - chunkHeight - 1,
+  },
+  {
+    startX: -CANVAS_HALF_WIDTH,
+    startY: CANVAS_HALF_HEIGHT - 3 * chunkHeight,
+    endX: CANVAS_HALF_WIDTH,
+    endY: CANVAS_HALF_HEIGHT - 2 * chunkHeight - 1,
+  },
+  {
+    startX: -CANVAS_HALF_WIDTH,
     startY: -CANVAS_HALF_HEIGHT,
     endX: CANVAS_HALF_WIDTH,
-    endY: -1,
+    endY: CANVAS_HALF_HEIGHT - 3 * chunkHeight - 1,
   },
 ];
 
@@ -79,9 +67,22 @@ export function render(scene: Scene) {
     });
   });
 
+  const pixelColors = new Uint8ClampedArray(CANVAS_WIDTH * CANVAS_HEIGHT * 4);
+
   Promise.all(promises).then((results) => {
-    results.flat().forEach(({ x, y, color }) => {
-      putPixel(x, y, color);
+    results.forEach((result: { x: number; y: number; color: RGB }[]) => {
+      result.forEach(({ x, y, color }) => {
+        const canvasX = x + CANVAS_HALF_WIDTH;
+        const canvasY = CANVAS_HEIGHT - (y + CANVAS_HALF_HEIGHT) - 1;
+
+        const index = (canvasY * CANVAS_WIDTH + canvasX) * 4;
+        pixelColors[index] = color[0];
+        pixelColors[index + 1] = color[1];
+        pixelColors[index + 2] = color[2];
+        pixelColors[index + 3] = 255;
+      });
     });
+
+    drawPixels(pixelColors);
   });
 }
