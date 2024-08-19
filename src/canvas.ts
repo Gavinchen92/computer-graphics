@@ -1,6 +1,5 @@
 import { RGB } from './interface';
 import { Scene } from './components/scene';
-import { Point } from './interface';
 import WebworkerPromise from 'webworker-promise';
 
 const canvasEle = document.getElementById('c') as HTMLCanvasElement;
@@ -15,10 +14,6 @@ const canvas = canvasEle.getContext('2d')!;
 
 const CANVAS_HALF_WIDTH = CANVAS_WIDTH / 2;
 const CANVAS_HALF_HEIGHT = CANVAS_HEIGHT / 2;
-
-const plantD = 1;
-const viewportWidth = 1;
-const viewportHeight = 1;
 
 // 在画布上绘制一个像素点
 function putPixel(x: number, y: number, color: RGB) {
@@ -36,15 +31,6 @@ function putPixel(x: number, y: number, color: RGB) {
 
   canvas.fillStyle = 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')';
   canvas.fillRect(trueX, trueY, 1, 1);
-}
-
-// canvas坐标转viewport坐标
-function canvas2viewport(x: number, y: number): Point {
-  return [
-    (x * viewportWidth) / CANVAS_WIDTH,
-    (y * viewportHeight) / CANVAS_HEIGHT,
-    plantD,
-  ];
 }
 
 const worker = new Worker(
@@ -83,12 +69,14 @@ const chunks = [
   },
 ];
 
-console.log(chunks);
-
 export function render(scene: Scene) {
   const promises = chunks.map((chunk) => {
-    const viewportPoint = canvas2viewport(chunk.startX, chunk.startY);
-    return renderWorker.postMessage({ scene, ...chunk, viewportPoint });
+    return renderWorker.postMessage({
+      scene,
+      ...chunk,
+      canvasWidth: CANVAS_WIDTH,
+      canvasHeight: CANVAS_HEIGHT,
+    });
   });
 
   Promise.all(promises).then((results) => {

@@ -10,7 +10,7 @@ export class Scene {
   constructor() {
     this.spheres = [];
     this.lights = [];
-    this.camera = new Camera({ position: [0, 0, 0], rotation: 0 });
+    this.camera = new Camera({ position: [0, 0, 0] });
   }
 
   addSphere(sphere: Sphere) {

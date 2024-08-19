@@ -60,10 +60,6 @@ scene.addLight(new PointLight(0.6, [2, 1, 0]));
 // 平行光
 scene.addLight(new DirectionalLight(0.2, [1, 4, 4]));
 
-scene.camera.rotation = {
-  direction: 'y',
-  radian: 0,
-};
 
 // 创建Stats实例
 const stats = new Stats();
@@ -71,14 +67,14 @@ stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom);
 
 function animate() {
+  scene.camera.rotationX += Math.PI / 720;
+  scene.camera.rotationY += Math.PI / 720;
+
   stats.begin();
-
-  scene.camera.rotation.radian += Math.PI / 180;
   render(scene);
-
   stats.end();
 
   requestAnimationFrame(animate);
 }
 
-animate();
+requestAnimationFrame(animate);

@@ -92,19 +92,26 @@ export function negateVector(vector: Vector): Vector {
  * 旋转使用3D旋转矩阵进行计算。
  * 正角度表示逆时针旋转，负角度表示顺时针旋转。
  */
-export function applyRotation(vector: Vector, rotation: number, axis: 'x' | 'y' | 'z'): Vector { 
-  const [x, y, z] = vector;
-  const cos = Math.cos(rotation);
-  const sin = Math.sin(rotation);
+export function applyRotation(
+  vector: Vector,
+  rotation: { x: number; y: number; z: number },
+): Vector {
+  let [x, y, z] = vector;
 
-  switch (axis) {
-    case 'x':
-      return [x, y * cos - z * sin, y * sin + z * cos];
-    case 'y':
-      return [z * sin + x * cos, y, z * cos - x * sin];
-    case 'z':
-      return [x * cos - y * sin, x * sin + y * cos, z];
-    default:
-      throw new Error('Invalid rotation axis. Must be "x", "y", or "z".');
-  }
+  // 绕X轴旋转
+  const cosX = Math.cos(rotation.x);
+  const sinX = Math.sin(rotation.x);
+  [y, z] = [y * cosX - z * sinX, y * sinX + z * cosX];
+
+  // 绕Y轴旋转
+  const cosY = Math.cos(rotation.y);
+  const sinY = Math.sin(rotation.y);
+  [x, z] = [z * sinY + x * cosY, z * cosY - x * sinY];
+
+  // 绕Z轴旋转
+  const cosZ = Math.cos(rotation.z);
+  const sinZ = Math.sin(rotation.z);
+  [x, y] = [x * cosZ - y * sinZ, x * sinZ + y * cosZ];
+
+  return [x, y, z];
 }

@@ -2,16 +2,19 @@ import { Point } from '../interface';
 
 export class Camera {
   position: Point;
-  rotation: {
-    direction: 'x' | 'y' | 'z';
-    radian: number;
-  };
+  rotationX: number;
+  rotationY: number;
+  rotationZ: number;
 
-  constructor(options: { position: Point; rotation: number }) {
+  constructor(options: {
+    position: Point;
+    rotationX?: number;
+    rotationY?: number;
+    rotationZ?: number;
+  }) {
     this.position = options.position;
-    this.rotation = {
-      direction: 'x',
-      radian: 0,
-    };
+    this.rotationX = options.rotationX || 0;
+    this.rotationY = options.rotationY || 0;
+    this.rotationZ = options.rotationZ || 0;
   }
 }

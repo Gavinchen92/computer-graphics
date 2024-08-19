@@ -22,6 +22,24 @@ const BackgroundColor: RGB = [0, 0, 0];
 
 const EPSILON = 1e-6; // 声明一个极小正数
 
+const plantD = 1;
+const viewportWidth = 1;
+const viewportHeight = 1;
+
+// canvas坐标转viewport坐标
+function canvas2viewport(
+  x: number,
+  y: number,
+  canvasWidth: number,
+  canvasHeight: number,
+): Point {
+  return [
+    (x * viewportWidth) / canvasWidth,
+    (y * viewportHeight) / canvasHeight,
+    plantD,
+  ];
+}
+
 /**
  * 计算反射光线的方向向量
  * @param {Vector} R - 入射光线的方向向量
@@ -236,13 +254,19 @@ function render(
   startY: number,
   endX: number,
   endY: number,
-  viewportPoint: Point,
+  canvasWidth: number,
+  canvasHeight: number,
 ) {
   const results = [];
 
   for (let x = startX; x <= endX; x++) {
     for (let y = startY; y <= endY; y++) {
-      const D = applyRotation(viewportPoint, scene.camera.rotation.radian, 'y');
+      const viewportPoint = canvas2viewport(x, y, canvasWidth, canvasHeight);
+      const D = applyRotation(viewportPoint, {
+        x: scene.camera.rotationX,
+        y: scene.camera.rotationY,
+        z: scene.camera.rotationZ,
+      });
       const color = traceRay(scene, scene.camera.position, D, 1, Infinity, 2);
 
       results.push({ x, y, color });
@@ -253,8 +277,17 @@ function render(
 }
 
 register((event) => {
-  const { scene, startX, startY, endX, endY, viewportPoint } = event;
-  const results = render(scene, startX, startY, endX, endY, viewportPoint);
+  const { scene, startX, startY, endX, endY, canvasWidth, canvasHeight } =
+    event;
+  const results = render(
+    scene,
+    startX,
+    startY,
+    endX,
+    endY,
+    canvasWidth,
+    canvasHeight,
+  );
 
   return results;
 });
