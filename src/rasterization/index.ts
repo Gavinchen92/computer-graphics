@@ -1,6 +1,18 @@
+import chroma from 'chroma-js';
+
+type Ratio = number & { __brand: 'Ratio' };
+
 interface Point2D {
   x: number;
   y: number;
+}
+
+interface Point2DWithRatio extends Point2D {
+  h: Ratio;
+}
+
+function createRatio(params: number): Ratio {
+  return params as Ratio;
 }
 
 function interpolate(i0: number, d0: number, i1: number, d1: number) {
@@ -83,12 +95,12 @@ class Canvas {
 
   /** 绘制填充三角形 */
   drawFilledTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: string) {
-    if (p1.y > p2.y) {
-      [p1, p2] = [p2, p1];
-    }
-
     if (p0.y > p1.y) {
       [p0, p1] = [p1, p0];
+    }
+
+    if (p1.y > p2.y) {
+      [p1, p2] = [p2, p1];
     }
 
     if (p0.y > p2.y) {
@@ -118,23 +130,73 @@ class Canvas {
       }
     }
   }
+
+  /** 绘制着色三角形 */
+  drawShadedTriangle(
+    p0: Point2DWithRatio,
+    p1: Point2DWithRatio,
+    p2: Point2DWithRatio,
+    color: string,
+  ) {
+    if (p0.y > p1.y) {
+      [p0, p1] = [p1, p0];
+    }
+
+    if (p1.y > p2.y) {
+      [p1, p2] = [p2, p1];
+    }
+
+    if (p0.y > p2.y) {
+      [p0, p2] = [p2, p0];
+    }
+
+    const x01 = interpolate(p0.y, p0.x, p1.y, p1.x);
+    const h01 = interpolate(p0.y, p0.h, p1.y, p1.h);
+    const x12 = interpolate(p1.y, p1.x, p2.y, p2.x);
+    const h12 = interpolate(p1.y, p1.h, p2.y, p2.h);
+    const x02 = interpolate(p0.y, p0.x, p2.y, p2.x);
+    const h02 = interpolate(p0.y, p0.h, p2.y, p2.h);
+
+    const x012 = x01.slice(0, -1).concat(x12);
+    const h012 = h01.slice(0, -1).concat(h12);
+
+    const m = Math.floor(x012.length / 2);
+
+    let xLeft, xRight, hLeft, hRight;
+    if (x02[m] < x012[m]) {
+      xLeft = x02;
+      xRight = x012;
+      hLeft = h02;
+      hRight = h012;
+    } else {
+      xLeft = x012;
+      xRight = x02;
+      hLeft = h012;
+      hRight = h02;
+    }
+
+    for (let y = p0.y; y <= p2.y; y++) {
+      const xL = xLeft[y - p0.y];
+      const xR = xRight[y - p0.y];
+
+      const hSegment = interpolate(xL, hLeft[y - p0.y], xR, hRight[y - p0.y]);
+
+      for (let x = xL; x <= xR; x++) {
+        const shadedColor = chroma.mix('black', color, hSegment[x - xL]).hex();
+
+        this.putPixel(x, y, shadedColor);
+      }
+    }
+  }
 }
 
 const canvas = new Canvas();
 
 export function render() {
-  // 现在可以使用相对于中心点的坐标
-  canvas.drawTriangle(
-    { x: -200, y: -250 },
-    { x: 200, y: 50 },
-    { x: 20, y: 250 },
-    'red',
-  );
-
-  canvas.drawFilledTriangle(
-    { x: -200, y: -250 },
-    { x: 200, y: 50 },
-    { x: 20, y: 250 },
+  canvas.drawShadedTriangle(
+    { x: -200, y: -250, h: createRatio(0) },
+    { x: 200, y: 50, h: createRatio(0.5) },
+    { x: 20, y: 250, h: createRatio(0) },
     'green',
   );
 }
