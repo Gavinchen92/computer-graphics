@@ -115,3 +115,16 @@ export function applyRotation(
 
   return [x, y, z];
 }
+
+/**
+ * 计算两个点之间的绝对距离
+ * @param {Point} p1 - 第一个点
+ * @param {Point} p2 - 第二个点
+ * @returns {number} 两点之间的绝对距离
+ */
+export function calculateAbsoluteDistance(p1: Point, p2: Point): number {
+  const dx = p2[0] - p1[0];
+  const dy = p2[1] - p1[1];
+  const dz = p2[2] - p1[2];
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}

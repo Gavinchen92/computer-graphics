@@ -1,4 +1,18 @@
-import shaderCode from './shader/index.wgsl';
+import shaderCode from './shader/triangle.wgsl';
+
+const shapeVertices = {
+  triangle: new Float32Array([
+    0.0, 0.6, 0, 1, 1, 0, 0, 1, -0.5, -0.6, 0, 1, 0, 1, 0, 1, 0.5, -0.6, 0, 1,
+    0, 0, 1, 1,
+  ]),
+
+  line: new Float32Array([
+    -0.5, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+    1.0,
+  ]),
+
+  // 可以继续添加其他形状...
+};
 
 export async function init() {
   const adapter = await navigator.gpu.requestAdapter();
@@ -32,17 +46,12 @@ export async function init() {
     alphaMode: 'premultiplied',
   });
 
-  const vertices = new Float32Array([
-    0.0, 0.6, 0, 1, 1, 0, 0, 1, -0.5, -0.6, 0, 1, 0, 1, 0, 1, 0.5, -0.6, 0, 1,
-    0, 0, 1, 1,
-  ]);
-
   const vertexBuffer = device.createBuffer({
-    size: vertices.byteLength,
+    size: shapeVertices.triangle.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
   });
 
-  device.queue.writeBuffer(vertexBuffer, 0, vertices, 0, vertices.length);
+  device.queue.writeBuffer(vertexBuffer, 0, shapeVertices.triangle);
 
   const pipeLineDescriptor: GPURenderPipelineDescriptor = {
     vertex: {
