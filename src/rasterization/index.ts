@@ -134,7 +134,7 @@ class Canvas {
   }
 
   /** 绘制线框三角形 */
-  drawTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: RGB) {
+  drawWireFrameTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: RGB) {
     this.drawLine(p0, p1, color);
     this.drawLine(p1, p2, color);
     this.drawLine(p2, p0, color);
@@ -238,94 +238,66 @@ class Canvas {
       }
     }
   }
+
+  /** 绘制三角形 */
+  renderTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: RGB) {
+    this.drawWireFrameTriangle(p0, p1, p2, color);
+  }
+
+  /** 绘制对象 */
+  renderObject(
+    vertices: Point3D[],
+    triangles: [number, number, number, RGB][],
+  ) {
+    const projected = vertices.map((v) => this.projectVertex(v));
+
+    triangles.forEach(([i0, i1, i2, color]) => {
+      const p0 = projected[i0];
+      const p1 = projected[i1];
+      const p2 = projected[i2];
+
+      this.renderTriangle(p0, p1, p2, color);
+    });
+  }
 }
 
 const canvas = new Canvas();
 
 export function render() {
-  const vAf: Point3D = { x: -1, y: 1, z: 1 };
-  const VBf: Point3D = { x: 1, y: 1, z: 1 };
-  const vCf: Point3D = { x: 1, y: -1, z: 1 };
-  const vDf: Point3D = { x: -1, y: -1, z: 1 };
+  // 偏移向量
+  const T = { x: -1.5, y: 0, z: 7 };
 
-  const vAb: Point3D = { x: -1, y: 1, z: 2 };
-  const VBb: Point3D = { x: 1, y: 1, z: 2 };
-  const vCb: Point3D = { x: 1, y: -1, z: 2 };
-  const vDb: Point3D = { x: -1, y: -1, z: 2 };
+  const vertices = [
+    { x: -1 + T.x, y: 1 + T.y, z: 1 + T.z }, // 前上左
+    { x: 1 + T.x, y: 1 + T.y, z: 1 + T.z }, // 前上右
+    { x: -1 + T.x, y: -1 + T.y, z: 1 + T.z }, // 前下左
+    { x: 1 + T.x, y: -1 + T.y, z: 1 + T.z }, // 前下右
+    { x: -1 + T.x, y: 1 + T.y, z: -1 + T.z }, // 后上左
+    { x: 1 + T.x, y: 1 + T.y, z: -1 + T.z }, // 后上右
+    { x: -1 + T.x, y: -1 + T.y, z: -1 + T.z }, // 后下左
+    { x: 1 + T.x, y: -1 + T.y, z: -1 + T.z }, // 后下右
+  ];
 
-  canvas.drawLine(
-    canvas.projectVertex(vAf),
-    canvas.projectVertex(VBf),
-    [0, 0, 255],
-  );
+  const triangles: [number, number, number, RGB][] = [
+    // 前面
+    [0, 1, 2, [255, 0, 0]],
+    [1, 3, 2, [255, 0, 0]],
+    // 后面
+    [4, 6, 5, [0, 255, 0]],
+    [5, 6, 7, [0, 255, 0]],
+    // 上面
+    [0, 4, 1, [0, 0, 255]],
+    [1, 4, 5, [0, 0, 255]],
+    // 下面
+    [2, 3, 6, [255, 255, 0]],
+    [3, 7, 6, [255, 255, 0]],
+    // 左面
+    [0, 2, 4, [255, 0, 255]],
+    [2, 6, 4, [255, 0, 255]],
+    // 右面
+    [1, 5, 3, [0, 255, 255]],
+    [3, 5, 7, [0, 255, 255]],
+  ];
 
-  canvas.drawLine(
-    canvas.projectVertex(VBf),
-    canvas.projectVertex(vCf),
-    [0, 0, 255],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(vCf),
-    canvas.projectVertex(vDf),
-    [0, 0, 255],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(vDf),
-    canvas.projectVertex(vAf),
-    [0, 0, 255],
-  );
-
-  // 背面
-
-  canvas.drawLine(
-    canvas.projectVertex(vAb),
-    canvas.projectVertex(VBb),
-    [0, 0, 255],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(VBb),
-    canvas.projectVertex(vCb),
-    [0, 0, 255],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(vCb),
-    canvas.projectVertex(vDb),
-    [0, 0, 255],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(vDb),
-    canvas.projectVertex(vAb),
-    [0, 0, 255],
-  );
-
-  // 连接前、后面的4条边
-
-  canvas.drawLine(
-    canvas.projectVertex(vAf),
-    canvas.projectVertex(vAb),
-    [0, 255, 0],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(VBf),
-    canvas.projectVertex(VBb),
-    [0, 255, 0],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(vCf),
-    canvas.projectVertex(vCb),
-    [0, 255, 0],
-  );
-
-  canvas.drawLine(
-    canvas.projectVertex(vDf),
-    canvas.projectVertex(vDb),
-    [0, 255, 0],
-  );
+  canvas.renderObject(vertices, triangles);
 }
