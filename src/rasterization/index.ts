@@ -7,6 +7,10 @@ interface Point2D {
   y: number;
 }
 
+interface Point3D extends Point2D {
+  z: number;
+}
+
 interface Point2DWithRatio extends Point2D {
   h: Ratio;
 }
@@ -37,6 +41,13 @@ class Canvas {
   width: number;
   height: number;
 
+  /** 视口宽度 */
+  viewportWidth = 4;
+  /** 视口高度 */
+  viewportHeight = 4;
+  /** 视口深度 */
+  depth = 1;
+
   constructor() {
     const canvas = document.getElementById('c') as HTMLCanvasElement;
     this.ctx = canvas.getContext('2d')!;
@@ -47,6 +58,22 @@ class Canvas {
     this.ctx.translate(this.width / 2, this.height / 2);
     // 翻转y轴,使y轴正方向向上
     this.ctx.scale(1, -1);
+  }
+
+  /** 将视口坐标转换为canvas坐标 */
+  viewportToCanvas(x: number, y: number) {
+    return {
+      x: (x * this.width) / this.viewportWidth,
+      y: (y * this.height) / this.viewportHeight,
+    };
+  }
+
+  /** 将3D坐标投影到2D坐标 */
+  projectVertex(v: Point3D): Point2D {
+    return this.viewportToCanvas(
+      (v.x * this.depth) / v.z,
+      (v.y * this.depth) / v.z,
+    );
   }
 
   /** 绘制像素 */
@@ -193,10 +220,57 @@ class Canvas {
 const canvas = new Canvas();
 
 export function render() {
-  canvas.drawShadedTriangle(
-    { x: -200, y: -250, h: createRatio(0) },
-    { x: 200, y: 50, h: createRatio(0.5) },
-    { x: 20, y: 250, h: createRatio(0) },
+  const vAf: Point3D = { x: -1, y: 1, z: 1 };
+  const VBf: Point3D = { x: 1, y: 1, z: 1 };
+  const vCf: Point3D = { x: 1, y: -1, z: 1 };
+  const vDf: Point3D = { x: -1, y: -1, z: 1 };
+
+  const vAb: Point3D = { x: -1, y: 1, z: 2 };
+  const VBb: Point3D = { x: 1, y: 1, z: 2 };
+  const vCb: Point3D = { x: 1, y: -1, z: 2 };
+  const vDb: Point3D = { x: -1, y: -1, z: 2 };
+
+  canvas.drawLine(canvas.projectVertex(vAf), canvas.projectVertex(VBf), 'blue');
+
+  canvas.drawLine(canvas.projectVertex(VBf), canvas.projectVertex(vCf), 'blue');
+
+  canvas.drawLine(canvas.projectVertex(vCf), canvas.projectVertex(vDf), 'blue');
+
+  canvas.drawLine(canvas.projectVertex(vDf), canvas.projectVertex(vAf), 'blue');
+
+  // 背面
+
+  canvas.drawLine(canvas.projectVertex(vAb), canvas.projectVertex(VBb), 'red');
+
+  canvas.drawLine(canvas.projectVertex(VBb), canvas.projectVertex(vCb), 'red');
+
+  canvas.drawLine(canvas.projectVertex(vCb), canvas.projectVertex(vDb), 'red');
+
+  canvas.drawLine(canvas.projectVertex(vDb), canvas.projectVertex(vAb), 'red');
+
+  // 连接前、后面的4条边
+
+  canvas.drawLine(
+    canvas.projectVertex(vAf),
+    canvas.projectVertex(vAb),
+    'green',
+  );
+
+  canvas.drawLine(
+    canvas.projectVertex(VBf),
+    canvas.projectVertex(VBb),
+    'green',
+  );
+
+  canvas.drawLine(
+    canvas.projectVertex(vCf),
+    canvas.projectVertex(vCb),
+    'green',
+  );
+
+  canvas.drawLine(
+    canvas.projectVertex(vDf),
+    canvas.projectVertex(vDb),
     'green',
   );
 }
