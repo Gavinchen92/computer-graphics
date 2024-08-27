@@ -1,4 +1,6 @@
 import chroma from 'chroma-js';
+import { RGB } from '../interface';
+import { multiplyColor } from '../color';
 
 type Ratio = number & { __brand: 'Ratio' };
 
@@ -15,10 +17,27 @@ interface Point2DWithRatio extends Point2D {
   h: Ratio;
 }
 
-function createRatio(params: number): Ratio {
-  return params as Ratio;
+/**
+ * 创建一个比率值
+ * @param n 输入的数值
+ * @returns 转换后的Ratio类型
+ */
+function createRatio(n: number): Ratio {
+  if (n > 1 || n < 0) {
+    throw new Error('n must be between 0 and 1');
+  }
+  return n as Ratio;
 }
 
+/**
+ * 线性插值函数
+ * 在两个给定点之间进行线性插值，生成一系列中间值
+ * @param i0 起始点的索引
+ * @param d0 起始点的值
+ * @param i1 结束点的索引
+ * @param d1 结束点的值
+ * @returns 包含插值结果的数组
+ */
 function interpolate(i0: number, d0: number, i1: number, d1: number) {
   if (i0 === i1) {
     return [d0];
@@ -77,14 +96,15 @@ class Canvas {
   }
 
   /** 绘制像素 */
-  putPixel(x: number, y: number, color: string) {
-    this.ctx.fillStyle = color;
+  putPixel(x: number, y: number, color: RGB) {
+    const hexColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+    this.ctx.fillStyle = hexColor;
     // 四舍五入确保像素对齐
     this.ctx.fillRect(Math.round(x), Math.round(y), 1, 1);
   }
 
   /** 绘制直线 */
-  drawLine(p0: Point2D, p1: Point2D, color: string) {
+  drawLine(p0: Point2D, p1: Point2D, color: RGB) {
     const dx = p1.x - p0.x;
     const dy = p1.y - p0.y;
 
@@ -114,14 +134,14 @@ class Canvas {
   }
 
   /** 绘制线框三角形 */
-  drawTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: string) {
+  drawTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: RGB) {
     this.drawLine(p0, p1, color);
     this.drawLine(p1, p2, color);
     this.drawLine(p2, p0, color);
   }
 
   /** 绘制填充三角形 */
-  drawFilledTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: string) {
+  drawFilledTriangle(p0: Point2D, p1: Point2D, p2: Point2D, color: RGB) {
     if (p0.y > p1.y) {
       [p0, p1] = [p1, p0];
     }
@@ -163,7 +183,7 @@ class Canvas {
     p0: Point2DWithRatio,
     p1: Point2DWithRatio,
     p2: Point2DWithRatio,
-    color: string,
+    color: RGB,
   ) {
     if (p0.y > p1.y) {
       [p0, p1] = [p1, p0];
@@ -179,8 +199,10 @@ class Canvas {
 
     const x01 = interpolate(p0.y, p0.x, p1.y, p1.x);
     const h01 = interpolate(p0.y, p0.h, p1.y, p1.h);
+
     const x12 = interpolate(p1.y, p1.x, p2.y, p2.x);
     const h12 = interpolate(p1.y, p1.h, p2.y, p2.h);
+
     const x02 = interpolate(p0.y, p0.x, p2.y, p2.x);
     const h02 = interpolate(p0.y, p0.h, p2.y, p2.h);
 
@@ -203,13 +225,14 @@ class Canvas {
     }
 
     for (let y = p0.y; y <= p2.y; y++) {
-      const xL = xLeft[y - p0.y];
-      const xR = xRight[y - p0.y];
+      const yOffset = y - p0.y;
+      const xL = xLeft[yOffset];
+      const xR = xRight[yOffset];
 
-      const hSegment = interpolate(xL, hLeft[y - p0.y], xR, hRight[y - p0.y]);
+      const hSegment = interpolate(xL, hLeft[yOffset], xR, hRight[yOffset]);
 
       for (let x = xL; x <= xR; x++) {
-        const shadedColor = chroma.mix('black', color, hSegment[x - xL]).hex();
+        const shadedColor = multiplyColor(color, hSegment[x - xL]);
 
         this.putPixel(x, y, shadedColor);
       }
@@ -230,47 +253,79 @@ export function render() {
   const vCb: Point3D = { x: 1, y: -1, z: 2 };
   const vDb: Point3D = { x: -1, y: -1, z: 2 };
 
-  canvas.drawLine(canvas.projectVertex(vAf), canvas.projectVertex(VBf), 'blue');
+  canvas.drawLine(
+    canvas.projectVertex(vAf),
+    canvas.projectVertex(VBf),
+    [0, 0, 255],
+  );
 
-  canvas.drawLine(canvas.projectVertex(VBf), canvas.projectVertex(vCf), 'blue');
+  canvas.drawLine(
+    canvas.projectVertex(VBf),
+    canvas.projectVertex(vCf),
+    [0, 0, 255],
+  );
 
-  canvas.drawLine(canvas.projectVertex(vCf), canvas.projectVertex(vDf), 'blue');
+  canvas.drawLine(
+    canvas.projectVertex(vCf),
+    canvas.projectVertex(vDf),
+    [0, 0, 255],
+  );
 
-  canvas.drawLine(canvas.projectVertex(vDf), canvas.projectVertex(vAf), 'blue');
+  canvas.drawLine(
+    canvas.projectVertex(vDf),
+    canvas.projectVertex(vAf),
+    [0, 0, 255],
+  );
 
   // 背面
 
-  canvas.drawLine(canvas.projectVertex(vAb), canvas.projectVertex(VBb), 'red');
+  canvas.drawLine(
+    canvas.projectVertex(vAb),
+    canvas.projectVertex(VBb),
+    [0, 0, 255],
+  );
 
-  canvas.drawLine(canvas.projectVertex(VBb), canvas.projectVertex(vCb), 'red');
+  canvas.drawLine(
+    canvas.projectVertex(VBb),
+    canvas.projectVertex(vCb),
+    [0, 0, 255],
+  );
 
-  canvas.drawLine(canvas.projectVertex(vCb), canvas.projectVertex(vDb), 'red');
+  canvas.drawLine(
+    canvas.projectVertex(vCb),
+    canvas.projectVertex(vDb),
+    [0, 0, 255],
+  );
 
-  canvas.drawLine(canvas.projectVertex(vDb), canvas.projectVertex(vAb), 'red');
+  canvas.drawLine(
+    canvas.projectVertex(vDb),
+    canvas.projectVertex(vAb),
+    [0, 0, 255],
+  );
 
   // 连接前、后面的4条边
 
   canvas.drawLine(
     canvas.projectVertex(vAf),
     canvas.projectVertex(vAb),
-    'green',
+    [0, 255, 0],
   );
 
   canvas.drawLine(
     canvas.projectVertex(VBf),
     canvas.projectVertex(VBb),
-    'green',
+    [0, 255, 0],
   );
 
   canvas.drawLine(
     canvas.projectVertex(vCf),
     canvas.projectVertex(vCb),
-    'green',
+    [0, 255, 0],
   );
 
   canvas.drawLine(
     canvas.projectVertex(vDf),
     canvas.projectVertex(vDb),
-    'green',
+    [0, 255, 0],
   );
 }

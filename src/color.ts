@@ -33,5 +33,3 @@ export function multiplyColor(color: RGB, factor: number): RGB {
   return color.map((c) => Math.round(c * factor)) as RGB;
 }
 
-// 为函数添加缓存属性
-multiplyColor.cache = new Map<string, RGB>();
